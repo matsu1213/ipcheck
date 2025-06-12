@@ -72,7 +72,11 @@ fn block_size(prefix: u8) -> u32 {
 }
 
 fn try_merge(a: &NetworkBlock, b: &NetworkBlock) -> Option<NetworkBlock> {
-    if a.prefix_len == b.prefix_len && a.last() + 1 == b.network {
+    if a.network % 256 == 0 && a.prefix_len > 24 {
+        Some(NetworkBlock::new(a.network, 24))
+    } else if b.network % 256 != 0 && b.prefix_len > 24 {
+        Some(*a)
+    } else if a.prefix_len == b.prefix_len && a.last() + 1 == b.network {
         let range_size = block_size(a.prefix_len) + block_size(b.prefix_len);
         let prefix = 32 - range_size.trailing_zeros() as u8;
         Some(NetworkBlock::new(a.network, prefix))
